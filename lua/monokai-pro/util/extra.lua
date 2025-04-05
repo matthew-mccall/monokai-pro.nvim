@@ -31,17 +31,6 @@ function M.terminal(colors)
   vim.g.terminal_color_14 = colors.base.cyan
 end
 
--- Function to check if the system is macOS
-function isMacOS()
-  -- Execute the `uname` command to determine the operating system
-  local handle = io.popen("uname")
-  local result = handle:read("*a")
-  handle:close()
-
-  -- Check if the result matches "Darwin" (the identifier for macOS)
-  return result:match("^%s*(.-)%s*$") == "Darwin"
-end
-
 -- Function to get the current macOS appearance (Light or Dark Mode)
 function getMacOSAppearance()
   -- AppleScript to check the macOS appearance
@@ -59,6 +48,9 @@ function getMacOSAppearance()
 
   -- Execute the AppleScript using os.execute or io.popen
   local handle = io.popen('osascript -e \'' .. applescript .. '\'')
+  if not handle then
+      return nil, "osascript not found or failed to execute"
+  end
   local result = handle:read("*a")
   handle:close()
 
@@ -67,8 +59,8 @@ function getMacOSAppearance()
 end
 
 function M.is_daytime()
-  if isMacOS() then
-    return getMacOSAppearance() == "Light"
+  if getMacOSAppearance() == "Light" then
+    return true
   else
     local current_time = os.time()
     local current_hour = tonumber(os.date("%H", current_time))
